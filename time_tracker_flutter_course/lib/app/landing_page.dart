@@ -12,7 +12,7 @@ class _LandingPageState extends State<LandingPage> {
   FirebaseUser _user;
 
   void _updateUser(FirebaseUser user) {
-    print('User id: ${user.uid}');
+    print('User id: ${user?.uid}');
     setState(() {
       _user = user;
     });
@@ -26,6 +26,8 @@ class _LandingPageState extends State<LandingPage> {
             _updateUser, //don't need to pass FirebaseUser user because it's required on both
       );
     }
-    return HomePage();
+    return HomePage(
+      onSignOut: () => _updateUser(null),
+    );
   }
 }
