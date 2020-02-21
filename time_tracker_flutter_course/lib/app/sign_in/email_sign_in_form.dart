@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:time_tracker_flutter_course/app/sign_in/validators.dart';
 import 'package:time_tracker_flutter_course/commun_widgets/form_submit_button.dart';
 import 'package:time_tracker_flutter_course/services/auth.dart';
 
 enum EmailSignInFormType { signIn, register }
 
-class EmailSignInForm extends StatefulWidget {
+class EmailSignInForm extends StatefulWidget with EmailAndPasswordValidators {
   final AuthBase auth;
   EmailSignInForm({@required this.auth});
   @override
@@ -18,11 +19,17 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
 
+  bool _submitted = false;
+  bool _isLoading = false;
   EmailSignInFormType _formType = EmailSignInFormType.signIn;
   String get _email => _emailEditingController.text;
   String get _password => _passwordEditingController.text;
 
   void _submit() async {
+    setState(() {
+      _submitted = true;
+      _isLoading = true;
+    });
     try {
       if (_formType == EmailSignInFormType.signIn) {
         await widget.auth.signInWithEmailAndPassword(_email, _password);
@@ -32,6 +39,10 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
       Navigator.of(context).pop();
     } catch (e) {
       print(e);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -41,6 +52,7 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
 
   void _toggleFormType() {
     setState(() {
+      _submitted = false;
       _formType = _formType == EmailSignInFormType.signIn
           ? EmailSignInFormType.register
           : EmailSignInFormType.signIn;
@@ -50,6 +62,7 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
   }
 
   TextField _buildEmailTextField() {
+    bool showErroText = _submitted && !widget.emailValidator.isValid(_email);
     return TextField(
       controller: _emailEditingController,
       focusNode: _emailFocusNode,
@@ -58,22 +71,29 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
       decoration: InputDecoration(
         labelText: 'Email',
         hintText: 'test@test.com',
+        errorText: showErroText ? widget.invalidEmailErrorText : null,
+        enabled: _isLoading == false,
       ),
       textInputAction: TextInputAction.next,
       onEditingComplete: _emailEditingComplete,
+      onChanged: (String value) => _updateState(),
     );
   }
 
   TextField _buildPasswordTextField() {
+    bool showErrorText = _submitted && !widget.passwordValidator.isValid(_password);
     return TextField(
       controller: _passwordEditingController,
       focusNode: _passwordFocusNode,
       decoration: InputDecoration(
         labelText: 'Password',
+        errorText: showErrorText ? widget.invalidPasswordErrorText : null,
+        enabled: _isLoading == false,
       ),
       obscureText: true,
       textInputAction: TextInputAction.done,
       onEditingComplete: _submit,
+      onChanged: (String value) => _updateState(),
     );
   }
 
@@ -85,6 +105,9 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
         ? 'Need an accont? Register'
         : 'Have an accont? Sign In';
 
+    bool submitEnabled = widget.emailValidator.isValid(_email) &&
+        widget.passwordValidator.isValid(_password) && !_isLoading;
+
     return [
       _buildEmailTextField(),
       SizedBox(height: 8.0),
@@ -92,11 +115,11 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
       SizedBox(height: 8.0),
       FormSubmitButton(
         text: primaryText,
-        onPressed: _submit,
+        onPressed: submitEnabled ? _submit : null,
       ),
       FlatButton(
         child: Text(secondayText),
-        onPressed: _toggleFormType,
+        onPressed: !_isLoading ? _toggleFormType : null,
       )
     ];
   }
@@ -111,5 +134,9 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
         children: _buildColumnChildren(),
       ),
     );
+  }
+
+  void _updateState() {
+    setState(() {});
   }
 }
