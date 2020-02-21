@@ -15,6 +15,8 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
   final TextEditingController _emailEditingController = TextEditingController();
   final TextEditingController _passwordEditingController =
       TextEditingController();
+  final FocusNode _emailFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
 
   EmailSignInFormType _formType = EmailSignInFormType.signIn;
   String get _email => _emailEditingController.text;
@@ -33,6 +35,10 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
     }
   }
 
+  void _emailEditingComplete() {
+    FocusScope.of(context).requestFocus(_passwordFocusNode);
+  }
+
   void _toggleFormType() {
     setState(() {
       _formType = _formType == EmailSignInFormType.signIn
@@ -41,6 +47,34 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
     });
     _emailEditingController.clear();
     _passwordEditingController.clear();
+  }
+
+  TextField _buildEmailTextField() {
+    return TextField(
+      controller: _emailEditingController,
+      focusNode: _emailFocusNode,
+      autocorrect: false,
+      keyboardType: TextInputType.emailAddress,
+      decoration: InputDecoration(
+        labelText: 'Email',
+        hintText: 'test@test.com',
+      ),
+      textInputAction: TextInputAction.next,
+      onEditingComplete: _emailEditingComplete,
+    );
+  }
+
+  TextField _buildPasswordTextField() {
+    return TextField(
+      controller: _passwordEditingController,
+      focusNode: _passwordFocusNode,
+      decoration: InputDecoration(
+        labelText: 'Password',
+      ),
+      obscureText: true,
+      textInputAction: TextInputAction.done,
+      onEditingComplete: _submit,
+    );
   }
 
   List<Widget> _buildColumnChildren() {
@@ -52,19 +86,9 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
         : 'Have an accont? Sign In';
 
     return [
-      TextField(
-        controller: _emailEditingController,
-        decoration:
-            InputDecoration(labelText: 'Email', hintText: 'test@test.com'),
-      ),
+      _buildEmailTextField(),
       SizedBox(height: 8.0),
-      TextField(
-        controller: _passwordEditingController,
-        decoration: InputDecoration(
-          labelText: 'Password',
-        ),
-        obscureText: true,
-      ),
+      _buildPasswordTextField(),
       SizedBox(height: 8.0),
       FormSubmitButton(
         text: primaryText,
