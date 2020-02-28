@@ -18,7 +18,7 @@ class HomePage extends StatelessWidget {
       title: 'LogOut',
       content: 'Are you sure that you want to logout?',
       cancelActionText: 'Cancel',
-      defaultActionText: 'LogOut',
+      defaultActionText: 'Logout',
     ).show(context);
     if(didRequestSignOut == true) {
       _signOut(context);
