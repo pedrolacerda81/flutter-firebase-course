@@ -1,22 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:time_tracker_flutter_course/app/sign_in/email_sign_in_bloc.dart';
+import 'package:time_tracker_flutter_course/app/sign_in/email_sign_in_model.dart';
 import 'package:time_tracker_flutter_course/app/sign_in/validators.dart';
 import 'package:time_tracker_flutter_course/commun_widgets/form_submit_button.dart';
 import 'package:provider/provider.dart';
 import 'package:time_tracker_flutter_course/commun_widgets/platform_exception_alert_dialog.dart';
 import 'package:time_tracker_flutter_course/services/auth.dart';
 
-enum EmailSignInFormType { signIn, register }
+class EmailSignInFormBlocBased extends StatefulWidget with EmailAndPasswordValidators {
+  EmailSignInFormBlocBased({Key key, @required this.bloc}) : super(key: key);
+  final EmailSignInBloc bloc;
 
-class EmailSignInForm extends StatefulWidget with EmailAndPasswordValidators {
+  static Widget create(BuildContext context) {
+    final AuthBase auth = Provider.of<AuthBase>(context);
+    return Provider<EmailSignInBloc>(
+      create: (context) => EmailSignInBloc(auth: auth),
+      child: Consumer<EmailSignInBloc>(
+        builder: (context, bloc, _) => EmailSignInFormBlocBased(bloc: bloc,),
+      ),
+      dispose: (context, bloc) => bloc.dispose(),
+    );
+  }
+
   @override
-  _EmailSignInFormState createState() => _EmailSignInFormState();
+  _EmailSignInFormBlocBasedState createState() => _EmailSignInFormBlocBasedState();
 }
 
-class _EmailSignInFormState extends State<EmailSignInForm> {
+class _EmailSignInFormBlocBasedState extends State<EmailSignInFormBlocBased> {
   final TextEditingController _emailEditingController = TextEditingController();
   final TextEditingController _passwordEditingController =
-      TextEditingController();
+  TextEditingController();
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
 
@@ -35,7 +49,7 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
     _passwordFocusNode.dispose();
   }
 
-  void _submit() async {
+  Future<void> _submit() async {
     setState(() {
       _submitted = true;
       _isLoading = true;
@@ -145,13 +159,19 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: _buildColumnChildren(),
-      ),
+    return StreamBuilder<EmailSignInModel>(
+      stream: widget.bloc.modelStream,
+      initialData: EmailSignInModel(),
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: _buildColumnChildren(),
+          ),
+        );
+      }
     );
   }
 
