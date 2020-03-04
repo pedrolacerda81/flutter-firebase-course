@@ -33,7 +33,7 @@ class JobsPage extends StatelessWidget {
     try {
       final Database databe = Provider.of<Database>(context, listen: false);
       await databe.createJob(Job(name: 'Blogging2', ratePerHour: 12));
-    } on PlatformException catch(e) {
+    } on PlatformException catch (e) {
       PlatformExceptionAlertDialog(
         title: 'Operation failed',
         exception: e,
@@ -43,9 +43,6 @@ class JobsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //TODO: temporary
-    final database = Provider.of<Database>(context);
-    database.readJobs();
     return Scaffold(
       appBar: AppBar(
         title: Text('Jobs'),
@@ -63,10 +60,37 @@ class JobsPage extends StatelessWidget {
           )
         ],
       ),
+      body: _buildContents(context),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () => _creatJob(context),
       ),
+    );
+  }
+
+  _buildContents(BuildContext context) {
+    final Database database = Provider.of<Database>(context);
+    return StreamBuilder<List<Job>>(
+      stream: database.jobsStream(),
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        if (snapshot.hasData) {
+          final List<Job> jobs = snapshot.data;
+          final List<Widget> children =
+              jobs.map((job) => Text(job.name)).toList();
+          return ListView(
+            children: children,
+          );
+        }
+        if (snapshot.hasError) {
+          return Center(
+            child: Text(
+              'Some error occurred :(',
+              style: TextStyle(fontSize: 24.0),
+            ),
+          );
+        }
+        return Center(child: CircularProgressIndicator());
+      },
     );
   }
 }
