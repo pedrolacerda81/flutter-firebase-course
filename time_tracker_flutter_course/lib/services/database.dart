@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 import 'dart:async';
 import 'package:time_tracker_flutter_course/app/home/models/job.dart';
@@ -9,13 +10,15 @@ abstract class Database {
   Stream<List<Job>> jobsStream();
 }
 
+String documentIdFromCurrentDate() => DateTime.now().toIso8601String();
+
 class FireStoreDatabase implements Database {
   final String uid;
   FireStoreDatabase({@required this.uid}) : assert(uid != null);
   final FirestoreService _service = FirestoreService.instance;
 
   Future<void> createJob(Job job) async => await _service.setData(
-        path: APIPath.job(uid, 'job_abc'),
+        path: APIPath.job(uid, documentIdFromCurrentDate()),
         data: job.toMap(),
       );
 

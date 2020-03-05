@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
+import 'package:time_tracker_flutter_course/app/home/models/job.dart';
+import 'package:time_tracker_flutter_course/commun_widgets/platform_alert_dialog.dart';
+import 'package:time_tracker_flutter_course/commun_widgets/platform_exception_alert_dialog.dart';
 import 'package:time_tracker_flutter_course/services/database.dart';
 
 class AddJobPage extends StatefulWidget {
@@ -11,7 +15,9 @@ class AddJobPage extends StatefulWidget {
     final Database database = Provider.of<Database>(context, listen: false);
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => AddJobPage(database: database,),
+        builder: (context) => AddJobPage(
+          database: database,
+        ),
         fullscreenDialog: true,
       ),
     );
@@ -36,9 +42,28 @@ class _AddJobPageState extends State<AddJobPage> {
     return false;
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (_validateAndSaveForm()) {
-      print('form saved => name: $_name and ratePerHour: $_ratePerHour');
+      try {
+        final jobs = await widget.database.jobsStream().first;
+        final allNames = jobs.map((job) => job.name).toList();
+        if (allNames.contains(_name)) {
+          PlatformAlertDialog(
+            title: 'Name already used',
+            content: 'Please, choose a different job name',
+            defaultActionText: 'OK',
+          ).show(context);
+        } else {
+          final job = Job(name: _name, ratePerHour: _ratePerHour);
+          await widget.database.createJob(job);
+          Navigator.of(context).pop();
+        }
+      } on PlatformException catch (e) {
+        PlatformExceptionAlertDialog(
+          title: 'Operation failed',
+          exception: e,
+        ).show(context);
+      }
     }
   }
 
@@ -99,7 +124,7 @@ class _AddJobPageState extends State<AddJobPage> {
         decoration: InputDecoration(
           labelText: 'Rate per Hour',
         ),
-        onSaved: (String value) => _ratePerHour = int.parse(value) ?? 0,
+        onSaved: (String value) => _ratePerHour = int.tryParse(value) ?? 0,
         keyboardType:
             TextInputType.numberWithOptions(signed: false, decimal: false),
       ),
