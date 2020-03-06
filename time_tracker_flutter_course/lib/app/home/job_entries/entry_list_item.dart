@@ -92,7 +92,14 @@ class DismissibleEntryListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dismissible(
-      background: Container(color: Colors.red),
+      background: Container(
+        padding: EdgeInsets.only(right: 10.0),
+        color: Colors.red,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: <Widget>[Icon(Icons.delete, color: Colors.white,)],
+        ),
+      ),
       key: key,
       direction: DismissDirection.endToStart,
       onDismissed: (direction) => onDismissed(),

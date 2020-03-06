@@ -10,7 +10,7 @@ import 'package:time_tracker_flutter_course/app/home/jobs/edit_job_page.dart';
 import 'package:time_tracker_flutter_course/app/home/jobs/list_items_builder.dart';
 import 'package:time_tracker_flutter_course/app/home/models/entry.dart';
 import 'package:time_tracker_flutter_course/app/home/models/job.dart';
-import 'package:time_tracker_flutter_course/commun_widgets/platform_exception_alert_dialog.dart';
+import 'package:time_tracker_flutter_course/common_widgets/platform_exception_alert_dialog.dart';
 import 'package:time_tracker_flutter_course/services/database.dart';
 
 class JobEntriesPage extends StatelessWidget {
@@ -19,7 +19,7 @@ class JobEntriesPage extends StatelessWidget {
   final Job job;
 
   static Future<void> show(BuildContext context, Job job) async {
-    final Database database = Provider.of<Database>(context);
+    final Database database = Provider.of<Database>(context, listen: false);
     await Navigator.of(context).push(
       MaterialPageRoute(
         fullscreenDialog: false,
@@ -51,15 +51,19 @@ class JobEntriesPage extends StatelessWidget {
               'Edit',
               style: TextStyle(fontSize: 18.0, color: Colors.white),
             ),
-            onPressed: () => EditJobPage.show(context, job: job),
+            onPressed: () =>
+                EditJobPage.show(context, database: database, job: job),
           ),
         ],
       ),
       body: _buildContent(context, job),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
-        onPressed: () =>
-            EntryPage.show(context: context, database: database, job: job),
+        onPressed: () => EntryPage.show(
+          context: context,
+          database: database,
+          job: job,
+        ),
       ),
     );
   }

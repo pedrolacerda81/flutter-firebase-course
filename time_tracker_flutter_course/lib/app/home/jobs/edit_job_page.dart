@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:time_tracker_flutter_course/app/home/models/job.dart';
-import 'package:time_tracker_flutter_course/commun_widgets/platform_alert_dialog.dart';
-import 'package:time_tracker_flutter_course/commun_widgets/platform_exception_alert_dialog.dart';
+import 'package:time_tracker_flutter_course/common_widgets/platform_alert_dialog.dart';
+import 'package:time_tracker_flutter_course/common_widgets/platform_exception_alert_dialog.dart';
 import 'package:time_tracker_flutter_course/services/database.dart';
 
 class EditJobPage extends StatefulWidget {
   final Database database;
   final Job job;
-  const EditJobPage({Key key, @required this.database, this.job}) : super(key: key);
+  const EditJobPage({Key key, @required this.database, this.job})
+      : super(key: key);
 
-  static Future<void> show(BuildContext context, {Job job}) async {
-    final Database database = Provider.of<Database>(context, listen: false);
+  static Future<void> show(BuildContext context,
+      {Database database, Job job}) async {
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => EditJobPage(
@@ -29,11 +30,10 @@ class EditJobPage extends StatefulWidget {
 }
 
 class _EditJobPageState extends State<EditJobPage> {
-
   @override
   void initState() {
     super.initState();
-    if(widget.job != null) {
+    if (widget.job != null) {
       _name = widget.job.name;
       _ratePerHour = widget.job.ratePerHour;
     }
@@ -57,7 +57,7 @@ class _EditJobPageState extends State<EditJobPage> {
       try {
         final jobs = await widget.database.jobsStream().first;
         final allNames = jobs.map((job) => job.name).toList();
-        if(widget.job != null) {
+        if (widget.job != null) {
           allNames.remove(widget.job.name);
         }
         if (allNames.contains(_name)) {
