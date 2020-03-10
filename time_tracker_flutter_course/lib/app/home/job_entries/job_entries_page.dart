@@ -77,7 +77,7 @@ class JobEntriesPage extends StatelessWidget {
     return StreamBuilder<List<Entry>>(
       stream: database.entriesStream(job: job),
       builder: (context, snapshot) {
-        return ListItemBuilder<Entry>(
+        return ListItemsBuilder<Entry>(
           snapshot: snapshot,
           itemBuilder: (context, entry) {
             return DismissibleEntryListItem(

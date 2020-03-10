@@ -49,7 +49,7 @@ class JobsPage extends StatelessWidget {
     return StreamBuilder<List<Job>>(
       stream: database.jobsStream(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
-        return ListItemBuilder<Job>(
+        return ListItemsBuilder<Job>(
           snapshot: snapshot,
           itemBuilder: (context, job) => Dismissible(
             key: Key('job-${job.id}'),
