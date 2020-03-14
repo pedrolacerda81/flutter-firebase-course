@@ -13,13 +13,16 @@ void main() {
     mockAuth = MockAuth();
   });
 
-  Future<void> pumpEmailSignInForm(WidgetTester widgetTester) async {
+  Future<void> pumpEmailSignInForm(WidgetTester widgetTester,
+      {VoidCallback onSignedIn}) async {
     await widgetTester.pumpWidget(
       Provider<AuthBase>(
         create: (_) => mockAuth,
         child: MaterialApp(
           home: Scaffold(
-            body: EmailSignInFormStateful(),
+            body: EmailSignInFormStateful(
+              onSignedIn: onSignedIn,
+            ),
           ),
         ),
       ),
@@ -30,21 +33,28 @@ void main() {
     testWidgets(
         'WHEN user doesn\'t enter email and password'
         'AND taps on sign in button'
-        'THEN signInWithEmailAndPassword is not called',
-        (WidgetTester widgetTester) async {
-      await pumpEmailSignInForm(widgetTester);
+        'THEN signInWithEmailAndPassword is not called'
+        'AND user is not signed-in', (WidgetTester widgetTester) async {
+      var signedIn = false;
+      await pumpEmailSignInForm(widgetTester,
+          onSignedIn: () => signedIn = true);
+
       final signInButton = find.text('Sign In');
       await widgetTester.tap(signInButton);
 
       verifyNever(mockAuth.signInWithEmailAndPassword(any, any));
+      expect(signedIn, false);
     });
 
     testWidgets(
         'WHEN user enters email and password'
         'AND taps on sign in button'
-        'THEN signInWithEmailAndPassword is called',
+        'THEN signInWithEmailAndPassword is called'
+        'AND the user is signed-in',
         (WidgetTester widgetTester) async {
-      await pumpEmailSignInForm(widgetTester);
+          var signedIn = false;
+          await pumpEmailSignInForm(widgetTester,
+              onSignedIn: () => signedIn = true);
 
       const email = 'email@email.com';
       const password = 'password';
@@ -63,6 +73,7 @@ void main() {
       await widgetTester.tap(signInButton);
 
       verify(mockAuth.signInWithEmailAndPassword(email, password)).called(1);
+      expect(signedIn, true);
     });
   });
 
@@ -112,7 +123,8 @@ void main() {
       expect(createAnAccountButton, findsOneWidget);
       await widgetTester.tap(createAnAccountButton);
 
-      verify(mockAuth.createUserWithEmailAndPassword(email, password)).called(1);
+      verify(mockAuth.createUserWithEmailAndPassword(email, password))
+          .called(1);
     });
   });
 }
