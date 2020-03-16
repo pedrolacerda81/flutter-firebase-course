@@ -9,13 +9,14 @@ class CustomRaisedButton extends StatelessWidget {
   final Color splashColor;
 
   CustomRaisedButton({
+    Key key,
     this.child,
     this.color,
     this.onPressed,
     this.splashColor,
     this.borderRadius: 8.0,
     this.height: 50.0,
-  }) : assert(borderRadius != null);
+  }) : assert(borderRadius != null), super(key: key);
 
   @override
   Widget build(BuildContext context) {
